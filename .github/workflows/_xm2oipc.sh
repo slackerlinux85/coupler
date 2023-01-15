@@ -6,6 +6,9 @@
 #####
 
 case $SOC in
+  *"xm550"*)
+    ENV=ENV_xm550
+    ;;
   *"xm530"*)
     ENV=ENV_xm530
     ;;
@@ -525,6 +528,44 @@ stderr=ns16550_serial
 stdin=ns16550_serial
 stdout=ns16550_serial
 vendor=novatek
+
+EOF
+)
+
+ENV_xm550=$(cat <<-EOF
+bootcmd=sf probe 0; sf read 0x80007fc0 0x50000 0x200000; bootm 0x80007fc0
+bootdelay=1
+baudrate=115200
+cramfsaddr=0x60040000
+da=mw.b 0x81000000 ff 800000;tftp 0x81000000 u-boot.bin.img;sf probe 0;flwrite
+du=mw.b 0x81000000 ff 800000;tftp 0x81000000 user-x.cramfs.img;sf probe 0;flwrite
+dr=mw.b 0x81000000 ff 800000;tftp 0x81000000 romfs-x.cramfs.img;sf probe 0;flwrite
+dw=mw.b 0x81000000 ff 800000;tftp 0x81000000 web-x.cramfs.img;sf probe 0;flwrite
+dc=mw.b 0x81000000 ff 800000;tftp 0x81000000 custom-x.cramfs.img;sf probe 0;flwrite
+up=mw.b 0x81000000 ff 800000;tftp 0x81000000 update.img;sf probe 0;flwrite
+ua=mw.b 0x81000000 ff 800000;tftp 0x81000000 upall_verify.img;sf probe 0;flwrite
+tk=mw.b 0x81000000 ff 800000;tftp 0x81000000 uImage; bootm 0x81000000
+dd=mw.b 0x81000000 ff 800000;tftp 0x81000000 mtd-x.jffs2.img;sf probe 0;flwrite
+uk=mw.b 0x81000000 ff 1000000;tftp 0x81000000 uImage.${SOC};sf probe 0;sf erase ${KERNEL_A} 0x200000; sf write 0x81000000 ${KERNEL_A} \${filesize}
+ur=mw.b 0x81000000 ff 1000000;tftp 0x81000000 rootfs.squashfs.${SOC};sf probe 0;sf erase ${ROOTFS_A} 0x500000; sf write 0x81000000 ${ROOTFS_A} \${filesize}
+ipaddr=192.168.1.10
+serverip=192.168.1.254
+netmask=255.255.0.0
+gatewayip=192.168.1.1
+ethact=dwmac.10010000
+ethaddr=00:00:23:34:45:66
+bootargs=mem=${OSMEM} console=ttyAMA0,115200 panic=20 root=/dev/mtdblock3 rootfstype=squashfs init=/init mtdparts=xm_sfc:256k(boot),64k(env),2048k(kernel),5120k(rootfs),-(rootfs_data)
+osmem=${OSMEM}
+totalmem=${TOTALMEM}
+soc=${SOC}
+${SENSOR}
+hardware=${HARDWARE}
+devid=${DEVID}
+manufacturer=Xiongmai
+stdin=serial
+stdout=serial
+stderr=serial
+verify=n
 
 EOF
 )
